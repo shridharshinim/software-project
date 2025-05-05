@@ -1,0 +1,967 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataVerseNova - Batch Data Analysis Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    :root {
+      --background: #0a0a0e;
+      --foreground: #f8f8f8;
+      --primary: #9b5cf6;
+      --primary-glow: rgba(139, 92, 246, 0.5);
+      --accent: #0ea5e9;
+      --accent-glow: rgba(14, 165, 233, 0.5);
+      --muted: #27272a;
+      --muted-foreground: #a1a1aa;
+      --border: #27272a;
+      --card: #18181b;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .glass-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .neon-glow {
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .neon-border {
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .neon-glow-accent {
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .neon-border-accent {
+      border: 1px solid rgba(14, 165, 233, 0.5);
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .button-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .button-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--foreground);
+    }
+
+    .button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .animate-float {
+      animation: float 6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .animate-pulse-glow {
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* Particle animation */
+    #particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      background-color: rgba(139, 92, 246, 0.5);
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .tab.active {
+      background-color: var(--muted);
+      color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(12px);
+      background-color: rgba(10, 10, 14, 0.5);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-link {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      transition: background-color 0.2s;
+      font-size: 0.875rem;
+    }
+
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .active-nav {
+      background-color: var(--muted);
+      color: var(--primary);
+    }
+
+    .ai-bubble {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+      cursor: pointer;
+      z-index: 50;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .progress {
+      height: 0.5rem;
+      background-color: var(--muted);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th, table td {
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    table th {
+      font-weight: 600;
+    }
+
+    table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .separator {
+      height: 1px;
+      width: 100%;
+      background-color: var(--border);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="particle-container"></div>
+
+  <header class="header">
+    <div class="container">
+      <div style="height: 4rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <a href="#" style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="position: relative; width: 2rem; height: 2rem;">
+              <div style="position: absolute; inset: 0; background-color: var(--primary); border-radius: 50%; filter: blur(5px); opacity: 0.5;"></div>
+              <div style="position: absolute; inset: 2px; background-color: var(--background); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2" style="color: var(--primary);"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+              </div>
+            </div>
+            <span style="font-weight: 600; font-size: 1.125rem;">DataVerseNova</span>
+          </a>
+          
+          <nav style="display: none; align-items: center; gap: 0.25rem; margin-left: 1rem;">
+            <a href="#" class="nav-link active-nav">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              Home
+            </a>
+            <a href="#" class="nav-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+              Upload
+            </a>
+            <a href="#" class="nav-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              Cleaning
+            </a>
+            <a href="#" class="nav-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+              Statistics
+            </a>
+            <a href="#" class="nav-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+              Visualization
+            </a>
+            <a href="#" class="nav-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              Settings
+            </a>
+          </nav>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button style="background: transparent; border: none; width: 2.5rem; height: 2.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="neon-glow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+          </button>
+          <button class="button button-outline" style="display: flex; align-items: center; gap: 0.375rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
+            Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero Section -->
+    <section style="padding-top: 5rem; padding-bottom: 5rem; text-align: center;" class="container">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; position: relative;">
+        <div style="position: absolute; inset: 0; background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%); border-radius: 9999px; filter: blur(20px);"></div>
+        <div style="position: relative; z-index: 10; font-size: 2.5rem; font-weight: 700; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent;" class="animate-pulse-glow">
+          DataVerseNova
+        </div>
+      </div>
+      
+      <h1 style="font-size: 3rem; font-weight: 700; letter-spacing: -0.025em; max-width: 48rem; margin: 0 auto;">
+        Batch Data Analysis and Visualization Web Platform
+      </h1>
+      
+      <p style="margin-top: 1.5rem; color: var(--muted-foreground); font-size: 1.25rem; max-width: 36rem; margin-left: auto; margin-right: auto;" class="animate-fade-in">
+        Transform your data into meaningful insights with our powerful analysis tools. 
+        Upload multiple CSV files, clean your data, analyze patterns, and create stunning visualizations.
+      </p>
+      
+      <div style="margin-top: 2.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;" class="animate-fade-in">
+        <button class="button button-primary" style="position: relative; overflow: hidden; padding: 0.75rem 1.5rem; font-size: 1rem; border-radius: 0.5rem;">
+          <span style="position: absolute; inset: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary), var(--accent)); opacity: 0; transition: opacity 0.3s;"></span>
+          <span style="position: relative; display: flex; align-items: center;">
+            Get Started
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" style="margin-left: 0.5rem;"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </span>
+        </button>
+        
+        <button class="button button-outline">
+          Explore Features
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" style="margin-left: 0.5rem;"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+      </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="container" style="padding-top: 3rem; padding-bottom: 3rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s;">
+          <div style="height: 3rem; width: 3rem; border-radius: 9999px; background-color: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload" style="color: var(--primary);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">File Management</h3>
+          <p style="color: var(--muted-foreground);">Upload multiple CSV files, preview data, and organize your datasets efficiently.</p>
+        </div>
+        
+        <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s;">
+          <div style="height: 3rem; width: 3rem; border-radius: 9999px; background-color: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2" style="color: var(--primary);"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Statistical Analysis</h3>
+          <p style="color: var(--muted-foreground);">Calculate central tendency, dispersion metrics, and correlation matrix for your data.</p>
+        </div>
+        
+        <div class="glass-card" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.3s;">
+          <div style="height: 3rem; width: 3rem; border-radius: 9999px; background-color: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart" style="color: var(--primary);"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Data Visualization</h3>
+          <p style="color: var(--muted-foreground);">Create interactive charts including histograms, scatter plots, bar charts, and more.</p>
+        </div>
+      </div>
+      
+      <div style="margin-top: 4rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center;">Platform Features</h2>
+        
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('upload')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h2"></path><path d="M8 17h2"></path><path d="M14 13h2"></path><path d="M14 17h2"></path></svg>
+            Upload
+          </button>
+          <button class="tab" onclick="showTab('cleaning')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scissors"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" x2="8.12" y1="4" y2="15.88"></line><line x1="14.47" x2="20" y1="14.48" y2="20"></line><line x1="8.12" x2="12" y1="8.12" y2="12"></line></svg>
+            Cleaning
+          </button>
+          <button class="tab" onclick="showTab('analysis')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gauge"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
+            Analysis
+          </button>
+          <button class="tab" onclick="showTab('visualization')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            Visualization
+          </button>
+          <button class="tab" onclick="showTab('dashboard')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            Dashboard
+          </button>
+          <button class="tab" onclick="showTab('settings')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            Settings
+          </button>
+        </div>
+
+        <div class="tab-content active" id="upload">
+          <div class="glass-card" style="overflow: hidden;">
+            <div style="padding: 1.5rem; background-color: rgba(255, 255, 255, 0.05);">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">File Upload & Management</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">Upload and manage your CSV files</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+              <div style="border: 2px dashed rgba(139, 92, 246, 0.3); border-radius: 0.5rem; padding: 2.5rem; text-align: center; background-color: rgba(255, 255, 255, 0.03); transition: background-color 0.3s; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload" style="margin: 0 auto 1rem; color: rgba(139, 92, 246, 0.7);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+                <h3 style="font-size: 1.25rem; font-weight: 500; margin-bottom: 0.5rem;">Drag & Drop CSV Files Here</h3>
+                <p style="color: var(--muted-foreground); margin-bottom: 1rem;">Or click to browse files</p>
+                <button class="button button-outline neon-border">Select Files</button>
+              </div>
+
+              <div style="margin-top: 1rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; background-color: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet" style="color: var(--primary);"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h2"></path><path d="M8 17h2"></path><path d="M14 13h2"></path><path d="M14 17h2"></path></svg>
+                    <div>
+                      <p style="font-weight: 500;">sales_data_2023.csv</p>
+                      <p style="font-size: 0.75rem; color: var(--muted-foreground);">2.3 MB • 1,458 rows • 8 columns</p>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button style="background: transparent; border: none; height: 2rem; width: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; cursor: pointer;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-check"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg>
+                    </button>
+                    <button style="background: transparent; border: none; height: 2rem; width: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; cursor: pointer;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; background-color: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet" style="color: var(--accent);"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M8 13h2"></path><path d="M8 17h2"></path><path d="M14 13h2"></path><path d="M14 17h2"></path></svg>
+                    <div>
+                      <p style="font-weight: 500;">customer_data.csv</p>
+                      <p style="font-size: 0.75rem; color: var(--muted-foreground);">1.7 MB • 852 rows • 12 columns</p>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button style="background: transparent; border: none; height: 2rem; width: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; cursor: pointer;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-check"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="m9 15 2 2 4-4"></path></svg>
+                    </button>
+                    <button style="background: transparent; border: none; height: 2rem; width: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 0.25rem; cursor: pointer;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="cleaning">
+          <div class="glass-card">
+            <div style="padding: 1.5rem;">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">Data Cleaning</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">Fix issues in your dataset</p>
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+              <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle" style="color: #ea384c;"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+                    Missing Values
+                  </span>
+                  <span style="font-size: 0.75rem; color: var(--muted-foreground);">45 of 1,458 rows</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" style="width: 3%;"></div>
+                </div>
+              </div>
+
+              <div style="background-color: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                  <h4 style="font-weight: 500;">Column: customer_age</h4>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button class="button button-outline" style="font-size: 0.875rem; padding: 0.25rem 0.5rem;">Fill with Mean</button>
+                    <button class="button button-outline" style="font-size: 0.875rem; padding: 0.25rem 0.5rem;">Drop Rows</button>
+                  </div>
+                </div>
+                <div style="font-size: 0.875rem; color: var(--muted-foreground);">
+                  <p>18 missing values detected</p>
+                  <p>Suggested action: Fill with mean (42.3)</p>
+                </div>
+              </div>
+
+              <div style="background-color: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                  <h4 style="font-weight: 500;">Column: product_category</h4>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button class="button button-outline" style="font-size: 0.875rem; padding: 0.25rem 0.5rem;">Fill with Mode</button>
+                    <button class="button button-outline" style="font-size: 0.875rem; padding: 0.25rem 0.5rem;">Drop Rows</button>
+                  </div>
+                </div>
+                <div style="font-size: 0.875rem; color: var(--muted-foreground);">
+                  <p>27 missing values detected</p>
+                  <p>Suggested action: Fill with mode ("Electronics")</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="analysis">
+          <div class="glass-card">
+            <div style="padding: 1.5rem;">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">Statistical Analysis</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">Explore your data metrics</p>
+            </div>
+            <div style="padding: 1.5rem;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background-color: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;" class="neon-border">
+                  <h4 style="font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.5rem;">Central Tendency</h4>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Mean</span>
+                      <span style="font-family: monospace;">42.3</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Median</span>
+                      <span style="font-family: monospace;">40.0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Mode</span>
+                      <span style="font-family: monospace;">38.5</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="background-color: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;" class="neon-border-accent">
+                  <h4 style="font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.5rem;">Dispersion</h4>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Std Dev</span>
+                      <span style="font-family: monospace;">12.7</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Variance</span>
+                      <span style="font-family: monospace;">161.3</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Range</span>
+                      <span style="font-family: monospace;">65.0</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="background-color: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 0.5rem;" class="neon-border">
+                  <h4 style="font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.5rem;">Distribution</h4>
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Skewness</span>
+                      <span style="font-family: monospace;">0.74</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Kurtosis</span>
+                      <span style="font-family: monospace;">2.18</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                      <span>Normality</span>
+                      <span style="font-family: monospace;">p=0.03</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h4 style="font-weight: 500; margin-bottom: 0.75rem;">Correlation Matrix</h4>
+                <div style="overflow-x: auto; background-color: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 0.5rem;">
+                  <table style="min-width: 100%; font-size: 0.875rem;">
+                    <thead>
+                      <tr>
+                        <th style="padding: 0.5rem;">&nbsp;</th>
+                        <th style="padding: 0.5rem;">age</th>
+                        <th style="padding: 0.5rem;">income</th>
+                        <th style="padding: 0.5rem;">spend</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="padding: 0.5rem; font-weight: 500;">age</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.5);">1.00</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.2);">0.32</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.1);">0.18</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0.5rem; font-weight: 500;">income</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.2);">0.32</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.5);">1.00</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.4);">0.75</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0.5rem; font-weight: 500;">spend</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.1);">0.18</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.4);">0.75</td>
+                        <td style="padding: 0.5rem; background-color: rgba(139, 92, 246, 0.5);">1.00</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="visualization">
+          <div class="glass-card">
+            <div style="padding: 1.5rem;">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">Data Visualization</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">Create charts and graphs</p>
+            </div>
+            <div style="padding: 1.5rem;">
+              <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                <button class="button button-outline" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+                  Bar Chart
+                </button>
+                <button class="button button-outline" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                  Line Chart
+                </button>
+                <button class="button button-outline" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                  Pie Chart
+                </button>
+                <button class="button button-outline" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                  Scatter Plot
+                </button>
+              </div>
+              
+              <div style="background-color: rgba(255, 255, 255, 0.03); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                  <div>
+                    <h4 style="font-weight: 500;">Chart Settings</h4>
+                    <p style="font-size: 0.75rem; color: var(--muted-foreground);">Select axes and configure your chart</p>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button class="button button-outline" style="font-size: 0.875rem;">Apply</button>
+                    <button class="button button-outline" style="font-size: 0.875rem;">Reset</button>
+                  </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                  <div>
+                    <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.25rem;">X-Axis</label>
+                    <select style="width: 100%; background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.375rem; height: 2.25rem; padding: 0 0.75rem;">
+                      <option>customer_age</option>
+                      <option>annual_income</option>
+                      <option>purchase_frequency</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.25rem;">Y-Axis</label>
+                    <select style="width: 100%; background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.375rem; height: 2.25rem; padding: 0 0.75rem;">
+                      <option>total_spend</option>
+                      <option>items_purchased</option>
+                      <option>customer_rating</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div style="background-color: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem; text-align: center; aspect-ratio: 16/9; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--muted);">
+                <div style="margin-bottom: 1rem; opacity: 0.7;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2" style="margin: 0 auto;"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+                </div>
+                <p style="color: var(--muted-foreground); margin-bottom: 1rem;">Select axes and apply settings to generate visualization</p>
+                <button class="button button-outline">Generate Chart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="dashboard">
+          <div class="glass-card">
+            <div style="padding: 1.5rem;">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">Dashboard Overview</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">View all your insights in one place</p>
+            </div>
+            <div style="padding: 1.5rem;">
+              <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                  <div style="background-color: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 0.5rem;" class="neon-glow">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Total Records</h4>
+                    <p style="font-size: 1.5rem; font-weight: 700;">2,310</p>
+                    <p style="font-size: 0.75rem; color: var(--muted-foreground);">From 2 datasets</p>
+                  </div>
+                  
+                  <div style="background-color: rgba(14, 165, 233, 0.1); padding: 1rem; border-radius: 0.5rem;" class="neon-glow-accent">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Analyses Run</h4>
+                    <p style="font-size: 1.5rem; font-weight: 700;">14</p>
+                    <p style="font-size: 0.75rem; color: var(--muted-foreground);">Last: 2 hours ago</p>
+                  </div>
+                  
+                  <div style="background-color: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 0.5rem;" class="neon-glow">
+                    <h4 style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Visualizations</h4>
+                    <p style="font-size: 1.5rem; font-weight: 700;">8</p>
+                    <p style="font-size: 0.75rem; color: var(--muted-foreground);">4 types of charts</p>
+                  </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                  <div style="background-color: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart" style="margin: 0 auto 0.75rem; opacity: 0.6;"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+                      <h4 style="font-weight: 500;">Income vs. Spending</h4>
+                      <p style="font-size: 0.75rem; color: var(--muted-foreground);">Line chart visualization</p>
+                    </div>
+                  </div>
+                  
+                  <div style="background-color: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; padding: 1rem; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart" style="margin: 0 auto 0.75rem; opacity: 0.6;"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                      <h4 style="font-weight: 500;">Category Distribution</h4>
+                      <p style="font-size: 0.75rem; color: var(--muted-foreground);">Pie chart visualization</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                  <button class="button button-outline neon-border" style="display: inline-flex; align-items: center;">
+                    Export Dashboard as PDF 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" style="margin-left: 0.5rem;"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="settings">
+          <div class="glass-card">
+            <div style="padding: 1.5rem;">
+              <h3 style="font-size: 1.5rem; font-weight: 600;">Settings</h3>
+              <p style="font-size: 0.875rem; color: var(--muted-foreground);">Customize your experience</p>
+            </div>
+            <div style="padding: 1.5rem;">
+              <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <h4 style="font-weight: 500;">Theme Preference</h4>
+                    <p style="font-size: 0.875rem; color: var(--muted-foreground);">Switch between light and dark mode</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.875rem; color: var(--muted-foreground);">Dark</span>
+                    <button class="button" style="background: transparent; border: none; width: 2.5rem; height: 2.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="neon-glow">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" style="opacity: 0;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                    <span style="font-size: 0.875rem; color: var(--muted-foreground);">Light</span>
+                  </div>
+                </div>
+                
+                <div class="separator"></div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <h4 style="font-weight: 500;">Language</h4>
+                    <p style="font-size: 0.875rem; color: var(--muted-foreground);">Select your preferred language</p>
+                  </div>
+                  <select style="background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.375rem; height: 2.25rem; padding: 0 0.75rem;">
+                    <option>English</option>
+                    <option>Spanish</option>
+                    <option>French</option>
+                    <option>German</option>
+                  </select>
+                </div>
+                
+                <div class="separator"></div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <h4 style="font-weight: 500;">Notifications</h4>
+                    <p style="font-size: 0.875rem; color: var(--muted-foreground);">Enable or disable system notifications</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.875rem; color: var(--muted-foreground);">Off</span>
+                    <button class="button" style="background: transparent; border: none; width: 2.5rem; height: 2.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="neon-glow">
+                      <span style="display: inline-block; width: 100%;"></span>
+                    </button>
+                    <span style="font-size: 0.875rem; color: var(--muted-foreground);">On</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="padding: 1.5rem; padding-top: 0; display: flex; justify-content: flex-end; gap: 1rem;">
+              <button class="button button-outline">Reset to Default</button>
+              <button class="button button-primary">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Login Preview Section -->
+    <section class="container" style="padding-top: 4rem; padding-bottom: 4rem; background: linear-gradient(to bottom, var(--background), rgba(255, 255, 255, 0.02));">
+      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Ready to Start Your Data Journey?</h2>
+      
+      <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center; max-width: 1200px; margin: 0 auto;">
+        <div class="glass-card animate-float" style="padding: 2rem; margin: 0 auto; max-width: 400px;">
+          <h3 style="font-size: 1.25rem; font-weight: 600; text-align: center; margin-bottom: 1.5rem;">Sign In</h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+              <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.25rem;">Email</label>
+              <input type="email" placeholder="your@email.com" 
+                style="width: 100%; background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.375rem; height: 2.5rem; padding: 0 0.75rem; color: var(--foreground);" />
+            </div>
+            <div>
+              <label style="font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.25rem;">Password</label>
+              <input type="password" placeholder="••••••••" 
+                style="width: 100%; background-color: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 0.375rem; height: 2.5rem; padding: 0 0.75rem; color: var(--foreground);" />
+            </div>
+            <button class="button button-primary" style="width: 100%; display: flex; align-items: center; justify-content: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock" style="margin-right: 0.5rem;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Sign In
+            </button>
+            <div style="text-align: center; font-size: 0.875rem; color: var(--muted-foreground);">
+              <a href="#" style="color: var(--primary);">Forgot password?</a>
+              <div style="margin-top: 0.25rem;">
+                Don't have an account? <a href="#" style="color: var(--primary);">Sign up</a>
+              </div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 1.5rem;">
+            <div style="position: relative;">
+              <div style="position: absolute; inset: 0; display: flex; align-items: center;">
+                <span style="width: 100%; border-top: 1px solid var(--border);"></span>
+              </div>
+              <div style="position: relative; display: flex; justify-content: center; font-size: 0.75rem; text-transform: uppercase;">
+                <span style="background-color: var(--card); padding: 0 0.5rem; color: var(--muted-foreground);">Or continue with</span>
+              </div>
+            </div>
+            <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 0.75rem;">
+              <button class="button button-outline" style="width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; padding: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </button>
+              <button class="button button-outline" style="width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; border-radius: 9999px; padding: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer style="padding: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--muted-foreground); border-top: 1px solid var(--border); margin-top: auto;">
+    <p>© 2025 DataVerseNova. All rights reserved.</p>
+  </footer>
+  
+  <div class="ai-bubble neon-glow">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  </div>
+  
+  <script>
+    // Create particles
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      const particleCount = Math.floor(window.innerWidth * window.innerHeight / 15000);
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 1 and 3px
+        const size = Math.random() * 2.5 + 0.5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random opacity between 0.2 and 0.6
+        particle.style.opacity = `${Math.random() * 0.4 + 0.2}`;
+        
+        // Random color (purples and blues)
+        const hue = Math.random() < 0.7 ? 
+          Math.floor(Math.random() * 40 + 250) : // Purple range
+          Math.floor(Math.random() * 40 + 200); // Blue range
+        
+        particle.style.backgroundColor = `hsl(${hue}, 70%, 60%)`;
+        
+        container.appendChild(particle);
+        
+        // Animate particle
+        animateParticle(particle);
+      }
+    }
+    
+    function animateParticle(particle) {
+      // Random starting position
+      let x = parseFloat(particle.style.left);
+      let y = parseFloat(particle.style.top);
+      
+      // Random speed between -0.05 and 0.05 percent of screen per frame
+      const speedX = (Math.random() - 0.5) * 0.05;
+      const speedY = (Math.random() - 0.5) * 0.05;
+      
+      function move() {
+        // Update position
+        x += speedX;
+        y += speedY;
+        
+        // Wrap around screen
+        if (x > 100) x = 0;
+        if (y > 100) y = 0;
+        if (x < 0) x = 100;
+        if (y < 0) y = 100;
+        
+        // Set new position
+        particle.style.left = `${x}%`;
+        particle.style.top = `${y}%`;
+        
+        // Continue animation
+        requestAnimationFrame(move);
+      }
+      
+      move();
+    }
+    
+    // Show active tab content
+    function showTab(tabId) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Deactivate all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show the selected tab content
+      document.getElementById(tabId).classList.add('active');
+      
+      // Activate the clicked tab
+      document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+    }
+    
+    // Run when page loads
+    window.addEventListener('load', () => {
+      createParticles();
+    });
+  </script>
+</body>
+</html>
